@@ -3,7 +3,13 @@
 
 <p align="left"> <img src="https://komarev.com/ghpvc/?username=sanjayrohith&label=Profile%20views&color=0e75b6&style=flat" alt="sanjayrohith" /> </p>
 
+- 🔭 I’m currently working on this [Dyslexic Readers Extension](https://github.com/sanjayrohith/dyslexic-extension)
+
 - 🌱 I’m currently learning **Flutter, React Native, Machine Learning**
+
+- 👯 I’m looking to collaborate on [Dyslexic Readers Extension](https://github.com/sanjayrohith/dyslexic-extension)
+
+- 🤝 I’m looking for help with [AgriShield](https://github.com/sanjayrohith/AGRISHIELD)
 
 - 💬 Ask me about **TypeScript, Next.js, Tailwind, Python**
 
@@ -24,4 +30,3 @@
 <p><img align="left" src="https://github-readme-stats.vercel.app/api/top-langs?username=sanjayrohith&show_icons=true&locale=en&layout=compact" alt="sanjayrohith" /></p>
 
 <p>&nbsp;<img align="center" src="https://github-readme-stats.vercel.app/api?username=sanjayrohith&show_icons=true&locale=en" alt="sanjayrohith" /></p>
-

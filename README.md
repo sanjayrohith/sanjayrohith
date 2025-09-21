@@ -15,7 +15,7 @@
 
 - 📫 How to reach me **sanjayrohith1802@gmail.com**
 
-- 📄 Know about my experiences [https://flowcv.com/resume/bh7okj8qflkg](https://flowcv.com/resume/bh7okj8qflkg)
+- 📄 Know about my experiences [https://flowcv.com/resume/bh7okj8qflkg](https://drive.google.com/file/d/1InIAMC5cM64krOUjclTahrxp5HP5dPsj/view?usp=sharing)
 
 <h3 align="left">Connect with me:</h3>
 <p align="left">

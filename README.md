@@ -1,5 +1,8 @@
 <h1 align="center">Hi 👋, I'm Sanjay Rohith</h1>
-![](https://raw.githubusercontent.com/sanjayrohith/sanjayrohith/main/header_1.png)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/sanjayrohith/sanjayrohith/main/header_1.png" />
+</p>
+
 <h3 align="center">I'm a Computer Science student passionate about coding, open-source, and building cool projects. Currently exploring AI/ML, Linux customization, and full-stack development.</h3>
 
 <p align="left"> <img src="https://komarev.com/ghpvc/?username=sanjayrohith&label=Profile%20views&color=0e75b6&style=flat" alt="sanjayrohith" /> </p>

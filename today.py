@@ -13,6 +13,49 @@ import hashlib
 HEADERS = {'authorization': 'token '+ os.environ['ACCESS_TOKEN']}
 USER_NAME = os.environ['USER_NAME'] # 'Andrew6rant'
 QUERY_COUNT = {'user_getter': 0, 'follower_getter': 0, 'graph_repos_stars': 0, 'recursive_loc': 0, 'graph_commits': 0, 'loc_query': 0}
+REQUEST_TIMEOUT = 30
+TRANSIENT_STATUS_CODES = {500, 502, 503, 504}
+MAX_RETRIES = 4
+
+
+def graphql_request(func_name, query, variables, save_partial=None):
+    """
+    Makes a GitHub GraphQL request with retry/backoff for transient failures.
+    """
+    last_error = None
+    last_response = None
+    for attempt in range(1, MAX_RETRIES + 1):
+        try:
+            response = requests.post(
+                'https://api.github.com/graphql',
+                json={'query': query, 'variables': variables},
+                headers=HEADERS,
+                timeout=REQUEST_TIMEOUT,
+            )
+            last_response = response
+            if response.status_code == 200:
+                return response
+            if response.status_code == 403:
+                raise Exception('Too many requests in a short amount of time!\nYou\'ve hit the non-documented anti-abuse limit!')
+            if response.status_code not in TRANSIENT_STATUS_CODES or attempt == MAX_RETRIES:
+                break
+            wait_time = 2 ** (attempt - 1)
+            print(f"{func_name} received HTTP {response.status_code}. Retrying in {wait_time}s ({attempt}/{MAX_RETRIES})...")
+            time.sleep(wait_time)
+        except requests.RequestException as error:
+            last_error = error
+            if attempt == MAX_RETRIES:
+                break
+            wait_time = 2 ** (attempt - 1)
+            print(f"{func_name} request error: {error}. Retrying in {wait_time}s ({attempt}/{MAX_RETRIES})...")
+            time.sleep(wait_time)
+
+    if save_partial is not None:
+        save_partial()
+
+    if last_response is not None:
+        raise Exception(func_name, ' has failed with a', last_response.status_code, last_response.text, QUERY_COUNT)
+    raise Exception(func_name, ' request failed after retries:', str(last_error), QUERY_COUNT)
 
 
 def daily_readme(birthday):
@@ -44,10 +87,7 @@ def simple_request(func_name, query, variables):
     """
     Returns a request, or raises an Exception if the response does not succeed.
     """
-    request = requests.post('https://api.github.com/graphql', json={'query': query, 'variables':variables}, headers=HEADERS)
-    if request.status_code == 200:
-        return request
-    raise Exception(func_name, ' has failed with a', request.status_code, request.text, QUERY_COUNT)
+    return graphql_request(func_name, query, variables)
 
 
 def graph_commits(start_date, end_date):
@@ -144,15 +184,15 @@ def recursive_loc(owner, repo_name, data, cache_comment, addition_total=0, delet
         }
     }'''
     variables = {'repo_name': repo_name, 'owner': owner, 'cursor': cursor}
-    request = requests.post('https://api.github.com/graphql', json={'query': query, 'variables':variables}, headers=HEADERS) # I cannot use simple_request(), because I want to save the file before raising Exception
-    if request.status_code == 200:
-        if request.json()['data']['repository']['defaultBranchRef'] != None: # Only count commits if repo isn't empty
-            return loc_counter_one_repo(owner, repo_name, data, cache_comment, request.json()['data']['repository']['defaultBranchRef']['target']['history'], addition_total, deletion_total, my_commits)
-        else: return 0
-    force_close_file(data, cache_comment) # saves what is currently in the file before this program crashes
-    if request.status_code == 403:
-        raise Exception('Too many requests in a short amount of time!\nYou\'ve hit the non-documented anti-abuse limit!')
-    raise Exception('recursive_loc() has failed with a', request.status_code, request.text, QUERY_COUNT)
+    request = graphql_request(
+        recursive_loc.__name__,
+        query,
+        variables,
+        save_partial=lambda: force_close_file(data, cache_comment),
+    )
+    if request.json()['data']['repository']['defaultBranchRef'] != None: # Only count commits if repo isn't empty
+        return loc_counter_one_repo(owner, repo_name, data, cache_comment, request.json()['data']['repository']['defaultBranchRef']['target']['history'], addition_total, deletion_total, my_commits)
+    return 0
 
 
 def loc_counter_one_repo(owner, repo_name, data, cache_comment, history, addition_total, deletion_total, my_commits):
@@ -247,7 +287,11 @@ def cache_builder(edges, comment_size, force_cache, loc_add=0, loc_del=0):
                 if int(commit_count) != edges[index]['node']['defaultBranchRef']['target']['history']['totalCount']:
                     # if commit count has changed, update loc for that repo
                     owner, repo_name = edges[index]['node']['nameWithOwner'].split('/')
-                    loc = recursive_loc(owner, repo_name, data, cache_comment)
+                    try:
+                        loc = recursive_loc(owner, repo_name, data, cache_comment)
+                    except Exception as error:
+                        print(f"Skipping LOC refresh for {owner}/{repo_name}: {error}")
+                        continue
                     data[index] = repo_hash + ' ' + str(edges[index]['node']['defaultBranchRef']['target']['history']['totalCount']) + ' ' + str(loc[2]) + ' ' + str(loc[0]) + ' ' + str(loc[1]) + '\n'
             except TypeError: # If the repo is empty
                 data[index] = repo_hash + ' 0 0 0 0\n'

@@ -6,13 +6,16 @@ on:
   schedule:
     - cron: "0 4 * * *"
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.10'
 
@@ -27,8 +30,7 @@ jobs:
       - name: Commit
         run: |-
           git add .
-          git diff
-          git config --global user.email "your-email@example.com"  # Update this
-          git config --global user.name "SanjayRohith-Bot"         # Update this
-          git commit -m "Updated README" -a || echo "No changes to commit"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git diff --cached --quiet || git commit -m "Updated README"
           git push

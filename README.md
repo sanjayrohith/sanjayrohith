@@ -1,5 +1,5 @@
 <div align="center">
-This is my little corner of GitHub — a place for the things I am building 
+This is my little corner of GitHub — a place for the things I am building, 
 experimenting with, and improving over time. >_<
 </div>
 

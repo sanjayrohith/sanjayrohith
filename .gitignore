@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+
+# Keep the source photo private; only the generated ASCII SVG is published.
+portrait/
